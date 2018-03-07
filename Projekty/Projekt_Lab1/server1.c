@@ -18,6 +18,7 @@
 int main(int argc, char** argv) {
 
     /* Deskryptory dla gniazda nasluchujacego i polaczonego: */
+
     int             listenfd, connfd;
 
     int             retval; /* Wartosc zwracana przez funkcje. */
@@ -73,7 +74,7 @@ int main(int argc, char** argv) {
         exit(EXIT_FAILURE);
     }
 
-    fprintf(stdout, "Server is listening for incoming connection...\n");
+    fprintf(stdout, "Server is listening for incoming connection on port %s...\n",argv[1]);
 
     /* Funkcja pobiera polaczenie z kolejki polaczen oczekujacych na zaakceptowanie
      * i zwraca deskryptor dla gniazda polaczonego: */
