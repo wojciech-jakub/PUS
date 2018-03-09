@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
     remote_addr.sin_port = htons(atoi(argv[2])); /* Numer portu. */
     addr_len = sizeof(remote_addr); /* Rozmiar struktury adresowej w bajtach. */
 
-    if(connect(sockfd,(sockaddr*)&remote_addr,addr_len)==-1){
+    if(connect(sockfd, (sockaddr*)&remote_addr, addr_len)==-1){
       perror("socket error");
       exit(EXIT_FAILURE);
     }
@@ -66,8 +66,8 @@ int main(int argc, char** argv) {
 
     while(1)
     {
-      char mess[256];
-       scanf("%99s", buf);
+      char message[256];
+       scanf("%99s", message);
 
 
        if(send(sockfd, message, strlen(message), 0)==-1)
