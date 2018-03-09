@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
 
     /* Bufor dla adresu IP klienta w postaci kropkowo-dziesietnej: */
     char            addr_buff[256];
-
+    int             checkpalindrome;
 
     if (argc != 2) {
         fprintf(stderr, "Invocation: %s <PORT>\n", argv[0]);
@@ -76,7 +76,7 @@ int main(int argc, char** argv) {
       }
       memset(buff,'\0',sizeof(buff));
 
-      else if((buff[1]=='\0'))
+      if((buff[1]=='\0'))
       {
         break;
       }
