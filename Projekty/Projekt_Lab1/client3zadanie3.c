@@ -112,8 +112,8 @@ int main(int argc, char** argv) {
 
 
 
-    }
-  }
+
+}
 
     /* sendto() wysyla dane na adres okreslony przez strukture 'remote_addr': */
 
@@ -129,4 +129,6 @@ int main(int argc, char** argv) {
     close(sockfd);
 
     exit(EXIT_SUCCESS);
+
+
 }
