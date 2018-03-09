@@ -57,14 +57,9 @@ int main(int argc, char** argv) {
     remote_addr.sin_port = htons(atoi(argv[2])); /* Numer portu. */
     addr_len = sizeof(remote_addr); /* Rozmiar struktury adresowej w bajtach. */
 
-    if(  retval = sendto(
-                   sockfd,
-                   argv[3], strlen(argv[3]),
-                   0,
-                   (struct sockaddr*)&remote_addr, addr_len
-                 )==-1){
-      perror("socket error");
-      exit(EXIT_FAILURE);
+    if(connect(sockfd, (struct sockaddr*)&remote_addr, addr_len) == -1){
+        perror("connect()");
+        exit(EXIT_FAILURE);
     }
 
 
@@ -72,7 +67,8 @@ int main(int argc, char** argv) {
     while(1)
     {
       char message[256];
-       scanf("%99s", message);
+      fgets(message, sizeof(message), stdin);
+
 
 
        if(send(sockfd, message, strlen(message), 0)==-1)
@@ -81,17 +77,16 @@ int main(int argc, char** argv) {
 			      exit(EXIT_FAILURE);
 		}
 
-    if(message[0]=='\000')
+    if(message[0]=='\0')
         {
             break;
         }
 
-        if (recvfrom(sockfd, buff, sizeof(buff), 0, NULL, NULL) == -1)
-  {
-    perror("socket error");
-
-    exit(EXIT_FAILURE);
-  }
+        retval = recv(sockfd, buff, sizeof(buff), 0);
+            if (retval == -1) {
+                perror("recvfrom()");
+                exit(EXIT_FAILURE);
+            }
         // retval = sendto(
         //              sockfd,
         //              argv[3], strlen(argv[3]),
@@ -113,7 +108,7 @@ int main(int argc, char** argv) {
         //       exit(EXIT_FAILURE);
         //   }
 
-          printf(stdout, "Server response: '%s'\n", buff);
+          fprintf(stdout, "Server response: '%s'\n", buff);
 
 
 
