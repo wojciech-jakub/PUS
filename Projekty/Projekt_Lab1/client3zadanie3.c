@@ -57,7 +57,12 @@ int main(int argc, char** argv) {
     remote_addr.sin_port = htons(atoi(argv[2])); /* Numer portu. */
     addr_len = sizeof(remote_addr); /* Rozmiar struktury adresowej w bajtach. */
 
-    if(connect(sockfd, (sockaddr*)&remote_addr, addr_len)==-1){
+    if(  retval = sendto(
+                   sockfd,
+                   argv[3], strlen(argv[3]),
+                   0,
+                   (struct sockaddr*)&remote_addr, addr_len
+                 )==-1){
       perror("socket error");
       exit(EXIT_FAILURE);
     }
