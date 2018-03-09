@@ -57,37 +57,60 @@ int main(int argc, char** argv) {
     remote_addr.sin_port = htons(atoi(argv[2])); /* Numer portu. */
     addr_len = sizeof(remote_addr); /* Rozmiar struktury adresowej w bajtach. */
 
-    sleep(1);
+    if(connect(sockfd,(sockaddr*)&remote_addr,addr_len)==-1){
+      perror("socket error");
+      exit(EXIT_FAILURE);
+    }
+
 
 
     while(1)
     {
-      if(fgets(buff,sizeof(buff),stdin)!=NULL)
-      {
-        retval = sendto(
-                     sockfd,
-                     argv[3], strlen(argv[3]),
-                     0,
-                     (struct sockaddr*)&remote_addr, addr_len
-                   );
-          if (retval == -1) {
-               perror("recvfrom()");
-               exit(EXIT_FAILURE);
-             }
-          if(buff[1]=='\0')
-          {
+      char mess[256];
+       scanf("%99s", buf);
+
+
+       if(send(sockfd, message, strlen(message), 0)==-1)
+		{
+			   perror("socket error");
+			      exit(EXIT_FAILURE);
+		}
+
+    if(message[0]=='\000')
+        {
             break;
+        }
 
-          memset(buff,'\0',sizeof(buff));
-          retval = recv(sockfd, buff, sizeof(buff), 0);
-          if (retval == -1) {
-              perror("recv()");
-              exit(EXIT_FAILURE);
-          }
+        if (recvfrom(sockfd, buff, sizeof(buff), 0, NULL, NULL) == -1)
+  {
+    perror("socket error");
 
-          fprintf(stdout, "Server response: '%s'\n", buff);
+    exit(EXIT_FAILURE);
+  }
+        // retval = sendto(
+        //              sockfd,
+        //              argv[3], strlen(argv[3]),
+        //              0,
+        //              (struct sockaddr*)&remote_addr, addr_len
+        //            );
+        //   if (retval == -1) {
+        //        perror("recvfrom()");
+        //        exit(EXIT_FAILURE);
+        //      }
+        //   if(buff[1]=='\0')
+        //   {
+        //     break;
+        //
+        //   memset(buff,'\0',sizeof(buff));
+        //   retval = recv(sockfd, buff, sizeof(buff), 0);
+        //   if (retval == -1) {
+        //       perror("recv()");
+        //       exit(EXIT_FAILURE);
+        //   }
 
-      }
+          printf(stdout, "Server response: '%s'\n", buff);
+
+
 
     }
   }
@@ -99,9 +122,9 @@ int main(int argc, char** argv) {
     /* Oczekiwanie na odpowiedz.
      * Nie interesuje nas adres, z ktorego wyslano odpowiedz: */
 
-    buff[retval] = '\0';
+  //  buff[retval] = '\0';
 
-    fprintf(stdout, "koniec\n");
+    printf(stdout, "koniec\n");
 
     close(sockfd);
 
