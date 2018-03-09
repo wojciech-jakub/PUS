@@ -90,6 +90,7 @@ int main(int argc, char** argv) {
       }
 
     }
+  }
 
     /* sendto() wysyla dane na adres okreslony przez strukture 'remote_addr': */
 
