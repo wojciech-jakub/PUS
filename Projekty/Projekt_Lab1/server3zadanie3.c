@@ -81,23 +81,28 @@ int main(int argc, char** argv) {
         break;
       }
 
-      checkpalindrome  = is_palindrome(buff,retval);
-      memset(buff,'\0',sizeof(buff));
 
       fprintf(stdout, "UDP datagram received from %s:%d. Echoing message...\n",
               inet_ntop(AF_INET, &client_addr.sin_addr, addr_buff, sizeof(addr_buff)),
               ntohs(client_addr.sin_port)
              );
+             checkpalindrome  = is_palindrome(buff,retval);
 
-      sleep(4);
+             memset(buff,'\0',sizeof(buff));
+
       switch(checkpalindrome)
       {
         case -1:
         printf("%s\n dane w buforze zawieraja znaki, ktore nie sa cyframi lub znakami bialymi\n",buff );
+        break;
         case 0:
         printf("%s\n dane w buforze nie sa palindromem liczbowym\n",buff );
+        break;
         case 1:
         printf("%s\n dane w buforze sa palindromem liczbowym\n", buff);
+        break;
+        default:
+        printf("%s\n wrong ",buff );
       }
       /* Wyslanie odpowiedzi (echo): */
       retval = sendto(
