@@ -122,7 +122,7 @@ int main(int argc, char** argv) {
     /* Oczekiwanie na odpowiedz.
      * Nie interesuje nas adres, z ktorego wyslano odpowiedz: */
 
-  //  buff[retval] = '\0';
+  //  buff[retval] = '\0';sdadasdasdad
 
     printf(stdout, "koniec\n");
 
