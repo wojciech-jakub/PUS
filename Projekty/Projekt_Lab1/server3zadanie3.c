@@ -93,11 +93,11 @@ int main(int argc, char** argv) {
       switch(checkpalindrome)
       {
         case -1:
-        fprintf("%s\n dane w buforze zawieraja znaki, ktore nie sa cyframi lub znakami bialymi\n",buff );
+        printf("%s\n dane w buforze zawieraja znaki, ktore nie sa cyframi lub znakami bialymi\n",buff );
         case 0:
-        fprintf("%s\n dane w buforze nie sa palindromem liczbowym\n",buff );
+        printf("%s\n dane w buforze nie sa palindromem liczbowym\n",buff );
         case 1:
-        fprintf("%s\n dane w buforze sa palindromem liczbowym\n", buff);
+        printf("%s\n dane w buforze sa palindromem liczbowym\n", buff);
       }
       /* Wyslanie odpowiedzi (echo): */
       retval = sendto(
@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
       }
     }
 
-    fprintf("KONIEC\n");
+    printf("KONIEC\n");
     close(sockfd);
 
     exit(EXIT_SUCCESS);
