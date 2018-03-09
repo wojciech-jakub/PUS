@@ -124,7 +124,7 @@ int main(int argc, char** argv) {
 
   //  buff[retval] = '\0';sdadasdasdad
 
-    printf(stdout, "koniec\n");
+    fprintf(stdout, "koniec\n");
 
     close(sockfd);
 
