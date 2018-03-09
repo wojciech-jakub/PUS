@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
       }
     }
 
-    fprintf("KONIEC\n", );
+    fprintf("KONIEC\n");
     close(sockfd);
 
     exit(EXIT_SUCCESS);
