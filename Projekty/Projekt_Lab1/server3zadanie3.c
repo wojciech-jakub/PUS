@@ -1,3 +1,10 @@
+/*
+ * Data:                2009-02-10
+ * Autor:               Jakub Gasior <quebes@mars.iti.pk.edu.pl>
+ * Kompilacja:          $ gcc server2.c -o server2
+ * Uruchamianie:        $ ./server2 <numer portu>
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h> /* socket() */
@@ -7,7 +14,6 @@
 #include <string.h>
 #include <errno.h>
 #include "libpalindrome.h"
-
 
 int main(int argc, char** argv) {
 
@@ -25,7 +31,6 @@ int main(int argc, char** argv) {
 
     /* Bufor dla adresu IP klienta w postaci kropkowo-dziesietnej: */
     char            addr_buff[256];
-    int             checkpalindrome;
 
     if (argc != 2) {
         fprintf(stderr, "Invocation: %s <PORT>\n", argv[0]);
@@ -39,15 +44,10 @@ int main(int argc, char** argv) {
         exit(EXIT_FAILURE);
     }
 
-    /* Wyzerowanie struktury adresowej serwera: */
     memset(&server_addr, 0, sizeof(server_addr));
-    /* Domena komunikacyjna (rodzina protokolow): */
     server_addr.sin_family          =       AF_INET;
-    /* Adres nieokreslony (ang. wildcard address): */
     server_addr.sin_addr.s_addr     =       htonl(INADDR_ANY);
-    /* Numer portu: */
     server_addr.sin_port            =       htons(atoi(argv[1]));
-    /* Rozmiar struktury adresowej serwera w bajtach: */
     server_addr_len                 =       sizeof(server_addr);
 
     /* Powiazanie "nazwy" (adresu IP i numeru portu) z gniazdem: */
@@ -58,66 +58,62 @@ int main(int argc, char** argv) {
 
     fprintf(stdout, "Server is listening for incoming connection...\n");
 
-    client_addr_len = sizeof(client_addr);
+    while(1){
+        client_addr_len = sizeof(client_addr);
+        /* Oczekiwanie na dane od klienta: */
+        retval = recvfrom(
+                    sockfd,
+                    buff, sizeof(buff),
+                    0,
+                    (struct sockaddr*)&client_addr, &client_addr_len
+                );
+        if (retval == -1) {
+            perror("recvfrom()");
+            exit(EXIT_FAILURE);
+        }
 
-    /* Oczekiwanie na dane od klienta: */
-    while(1)
-    {
-      retval = recvfrom(
-                   sockfd,
-                   buff, sizeof(buff),
-                   0,
-                   (struct sockaddr*)&client_addr, &client_addr_len
-               );
-      if (retval == -1) {
-          printf("Problem with the socket\n");
-          perror("recvfrom()");
-          exit(EXIT_FAILURE);
-      }
-      memset(buff,'\0',sizeof(buff));
+        if(retval == 0 || buff[0] == '\0'){
+            break;
+        }
 
-      if((buff[1]=='\0'))
-      {
-        break;
-      }
+        fprintf(stdout, "UDP datagram received from %s:%d.\n",
+            inet_ntop(AF_INET, &client_addr.sin_addr, addr_buff, sizeof(addr_buff)),
+            ntohs(client_addr.sin_port)
+        );
 
+        char palindrome[256];
+        switch(is_palindrome(buff, strlen(buff))){
+            case -1:
+            //dane w buforze zawieraja znaki, ktore nie sa cyframi lub znakami bialymi
+                sprintf( palindrome, "Nie jest liczba" );
+                break;
+            case 0:
+            // dane w buforze nie sa palindromem liczbowym
+                sprintf( palindrome, "Nie palindrom" );
+                break;
+            case 1:
+            //dane w buforze sa palindromem liczbowym*
+                sprintf( palindrome, "Palindrom" );
+                break;
 
-      fprintf(stdout, "UDP datagram received from %s:%d. Echoing message...\n",
-              inet_ntop(AF_INET, &client_addr.sin_addr, addr_buff, sizeof(addr_buff)),
-              ntohs(client_addr.sin_port)
-             );
-             checkpalindrome  = is_palindrome(buff,retval);
+        }
 
-             memset(buff,'\0',sizeof(buff));
+        retval = sendto(
+                    sockfd,
+                    palindrome, sizeof(palindrome),
+                    0,
+                    (struct sockaddr*)&client_addr, client_addr_len
+                );
+        if (retval == -1) {
+            perror("sendto()");
+            exit(EXIT_FAILURE);
+        }
 
-      switch(checkpalindrome)
-      {
-        case -1:
-        printf("%s\n dane w buforze zawieraja znaki, ktore nie sa cyframi lub znakami bialymi\n",buff );
-        break;
-        case 0:
-        printf("%s\n dane w buforze nie sa palindromem liczbowym\n",buff );
-        break;
-        case 1:
-        printf("%s\n dane w buforze sa palindromem liczbowym\n", buff);
-        break;
-        default:
-        printf("%s\n wrong ",buff );
-      }
-      /* Wyslanie odpowiedzi (echo): */
-      retval = sendto(
-                   sockfd,
-                   buff, retval,
-                   0,
-                   (struct sockaddr*)&client_addr, client_addr_len
-               );
-      if (retval == -1) {
-          perror("sendto()");
-          exit(EXIT_FAILURE);
-      }
+        memset(&buff, 0, sizeof(buff));
     }
 
-    printf("KONIEC\n");
+
+
     close(sockfd);
 
     exit(EXIT_SUCCESS);

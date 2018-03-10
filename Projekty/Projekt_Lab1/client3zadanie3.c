@@ -14,6 +14,7 @@
 #include <string.h>
 #include <errno.h>
 
+
 int main(int argc, char** argv) {
 
     int             sockfd;                 /* Desktryptor gniazda. */
@@ -21,7 +22,7 @@ int main(int argc, char** argv) {
     struct          sockaddr_in remote_addr;/* Gniazdowa struktura adresowa. */
     socklen_t       addr_len;               /* Rozmiar struktury w bajtach. */
     char            buff[256];              /* Bufor dla funkcji recvfrom(). */
-
+    char txt[10];
 
     if (argc != 3) {
         fprintf(
@@ -30,7 +31,6 @@ int main(int argc, char** argv) {
         );
         exit(EXIT_FAILURE);
     }
-
 
     /* Utworzenie gniazda dla protokolu UDP: */
     sockfd = socket(PF_INET, SOCK_DGRAM, 0);
@@ -61,74 +61,37 @@ int main(int argc, char** argv) {
         perror("connect()");
         exit(EXIT_FAILURE);
     }
+    // char message[256];
+    while(1){
+        char message[256];
+        // memset(message, '\0', sizeof(message));
 
+        printf("Enter message: ");
+        fgets(message, sizeof(message), stdin);
 
+        if(message[0]=='\n'){
+            memset(message, '\0', sizeof(message));
+        }
 
-    while(1)
-    {
-      char message[256];
-      fgets(message, sizeof(message), stdin);
+        if (send(sockfd,message, strlen(message),0) == -1) {
+            perror("send()");
+            exit(EXIT_FAILURE);
+        }
 
-
-
-       if(send(sockfd, message, strlen(message), 0)==-1)
-		{
-			   perror("socket error");
-			      exit(EXIT_FAILURE);
-		}
-
-    if(message[0]=='\0')
-        {
+        if(message[0]=='\0'){
             break;
         }
 
         retval = recv(sockfd, buff, sizeof(buff), 0);
-            if (retval == -1) {
-                perror("recvfrom()");
-                exit(EXIT_FAILURE);
-            }
-        // retval = sendto(
-        //              sockfd,
-        //              argv[3], strlen(argv[3]),
-        //              0,
-        //              (struct sockaddr*)&remote_addr, addr_len
-        //            );
-        //   if (retval == -1) {
-        //        perror("recvfrom()");
-        //        exit(EXIT_FAILURE);
-        //      }
-        //   if(buff[1]=='\0')
-        //   {
-        //     break;
-        //
-        //   memset(buff,'\0',sizeof(buff));
-        //   retval = recv(sockfd, buff, sizeof(buff), 0);
-        //   if (retval == -1) {
-        //       perror("recv()");
-        //       exit(EXIT_FAILURE);
-        //   }
+        if (retval == -1) {
+            perror("recvfrom()");
+            exit(EXIT_FAILURE);
+        }
 
-          fprintf(stdout, "Server response: '%s'\n", buff);
-
-
-
-
-}
-
-    /* sendto() wysyla dane na adres okreslony przez strukture 'remote_addr': */
-
-
-
-    /* Oczekiwanie na odpowiedz.
-     * Nie interesuje nas adres, z ktorego wyslano odpowiedz: */
-
-  //  buff[retval] = '\0';sdadasdasdad
-
-    fprintf(stdout, "koniec\n");
+        fprintf(stdout, "Server response: %s\n", buff);
+    }
 
     close(sockfd);
 
     exit(EXIT_SUCCESS);
-
-
 }
