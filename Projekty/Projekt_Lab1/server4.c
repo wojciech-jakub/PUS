@@ -1,10 +1,3 @@
-/*
- * Data:                2009-02-10
- * Autor:               Jakub Gasior <quebes@mars.iti.pk.edu.pl>
- * Kompilacja:          $ gcc server1.c -o server1
- * Uruchamianie:        $ ./server1 <numer portu>
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h> /* socket() */
@@ -14,38 +7,38 @@
 #include <string.h>
 #include <time.h>
 #include <errno.h>
+#define MAX_CONN 15
 
-#define MAX_CLIENTS 10
+int     listenfd, clients[MAX_CONN];
+int     N;
+fd_set  fds;
+
+
+
+char    addr_buff[256];
+
+void checkForConnection();
+void checkConnected();
+void removeEl(int *array, int index, int length);
 
 int main(int argc, char** argv) {
-
-
-    int connctedfd[MAX_CLIENTS], listen_socket;
-    int num = 0;
-    int i,k;
-    int return_value;
-    int curr_writing_client;
-    int exit_flag = 0;
-
-    struct sockaddr_in server_addr,client_addr;
-    socklen_t server_addr_len, client_addr_len;
-
-    char buff[256];
-    char addr_buff[256];
-    fd_set fds;
+    int             retval;
+    struct          sockaddr_in client_addr, server_addr;
+    socklen_t       client_addr_len, server_addr_len;
+    char            buff[256];
+    int i;
+    N=0;
 
     if (argc != 2) {
         fprintf(stderr, "Invocation: %s <PORT>\n", argv[0]);
         exit(EXIT_FAILURE);
     }
 
-    listen_socket = socket(PF_INET, SOCK_STREAM, 0);
-
-    if (listen_socket == -1) {
+    listenfd = socket(PF_INET, SOCK_STREAM, 0);
+    if (listenfd == -1) {
         perror("socket()");
         exit(EXIT_FAILURE);
     }
-
 
     memset(&server_addr, 0, sizeof(server_addr));
 
@@ -54,81 +47,103 @@ int main(int argc, char** argv) {
     server_addr.sin_port            =       htons(atoi(argv[1]));
     server_addr_len                 =       sizeof(server_addr);
 
-    if (bind(listen_socket, (struct sockaddr*) &server_addr, server_addr_len) == -1) {
+    if (bind(listenfd, (struct sockaddr*) &server_addr, server_addr_len) == -1) {
         perror("bind()");
         exit(EXIT_FAILURE);
     }
 
-    if (listen(listen_socket, 2) == -1) {
+    if (listen(listenfd, 2) == -1) {
         perror("listen()");
         exit(EXIT_FAILURE);
     }
 
+    fprintf(stdout, "Server is listening for incoming connection...\n");
 
-    while(1)
-    {
-      FD_ZERO(&fds);
-      FD_SET(listen_socket, &fds);
-      for(i = 0 ; i < num; ++i)
-        FD_SET(connctedfd[i], &fds);
+    while(1){
+        FD_ZERO(&fds);
+        FD_SET(listenfd, &fds);
 
-      if(select(sizeof(fds) * 8, &fds, NULL, NULL, 0) > 0)
-      {
-        if(FD_ISSET(listen_socket, &fds))
-        {
-          client_addr_len = sizeof(client_addr);
-          connctedfd[num] = accept(listen_socket, (struct sockaddr*)&client_addr, &client_addr_len);
-          if (connctedfd[num] == -1) {
-              perror("accept()");
-              exit(EXIT_FAILURE);
-          }
-
-          fprintf(
-              stdout, "TCP connection accepted from %s:%d\n",
-              inet_ntop(AF_INET, &client_addr.sin_addr, addr_buff, sizeof(addr_buff)),
-              ntohs(client_addr.sin_port)
-          );
-
-          ++num;
+        for(i=0; i<N;i++){
+            FD_SET(clients[i], &fds);
         }
 
-          for(i = 0; i < num ;++i)
-          {
-            if(FD_ISSET(connctedfd[i], &fds))
-            {
-              memset(buff, '\0', sizeof(buff));
-              return_value = read(connctedfd[i], buff, sizeof(buff));
-              curr_writing_client = i;
-
-              if(return_value == 0)
-              {
-                close(connctedfd[i]);
-
-                for(k = i; k < num - 1; ++k)
-                {
-                  connctedfd[k] = connctedfd[k + 1];
-                }
-                num--;
-                fprintf(stdout, "Client disconnected. Connected clients:%d\n", num);
-                if(num == 0)
-                  exit_flag = 1;
-              }
-              else
-              {
-                for(i = 0 ; i < num; ++i)
-                {
-                  if(i != curr_writing_client)
-                    write(connctedfd[i], buff, sizeof(buff));
-                }
-              }
-            }
-          }
+        if (select(sizeof(fds)*8, &fds, NULL, NULL, NULL) > 0){
+            checkForConnection();
+            checkConnected();
+        }else {
+            perror("select failed");
+            exit(EXIT_FAILURE);
         }
-        if(exit_flag)
-          break;
-      }
 
-    close(listen_socket);
-    fprintf(stdout, "Closing server.\n");
+    }
     exit(EXIT_SUCCESS);
+}
+
+void checkConnected(){
+    int i,j;
+    int             retval;
+    socklen_t       client_addr_len;
+
+    struct sockaddr_in client_addr;
+    memset(&client_addr, 0, sizeof(client_addr));
+
+    char            buff[256];
+    memset(&buff, 0, sizeof(buff));
+
+    for(i=0; i<N;i++){
+        if(FD_ISSET(clients[i], &fds)){
+
+            if (read(clients[i], buff, sizeof(buff)) == 0) {
+                fprintf(stdout, "Client disconected \n");
+
+                close(clients[i]);
+                FD_CLR(clients[i], &fds);
+
+
+                removeEl(clients, i, N);
+                N--;
+            }else {
+                // wyslij do wszystkich
+                for(j=0; j<N;j++){
+                    send(clients[j], buff, strlen(buff),0);
+                }
+            }
+
+        }
+    }
+}
+
+void checkForConnection(){
+    struct sockaddr_in client_addr;
+    socklen_t client_addr_len;
+    int newConn;
+
+    memset(&client_addr,0,sizeof(client_addr));
+
+    if(FD_ISSET(listenfd, &fds)){
+        client_addr_len = sizeof(client_addr);
+        newConn = accept(listenfd, (struct sockaddr*)&client_addr, &client_addr_len);
+        if (newConn == -1) {
+            perror("accept()");
+            exit(EXIT_FAILURE);
+        }
+
+        // insertArray(&clientList, newConn);
+        clients[N++] = newConn;
+
+        fprintf(
+            stdout, "TCP connection accepted from %s:%d\n",
+            inet_ntop(AF_INET, &client_addr.sin_addr, addr_buff, sizeof(addr_buff)),
+            ntohs(client_addr.sin_port)
+        );
+    }
+
+}
+
+void removeEl(int *array, int index, int length){
+    int i;
+    for(i=index; i<length-1; i++){
+        array[i] = array[i+1];
+    }
+    array[length-1] = -1;
 }
