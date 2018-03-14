@@ -9,11 +9,10 @@
 #include <errno.h>
 
 
-
 void *handle_client_connection(void *arg);                 
 
 int main(int argc, char** argv) {
-    int connctedfd, listen_socket;
+    int connctedfd, listen_socket, *new_sock;
     struct sockaddr_in server_addr, client_addr;
     socklen_t server_addr_len, client_addr_len;
     pthread_t child;
@@ -52,14 +51,14 @@ int main(int argc, char** argv) {
     }
 
     
-    while (1)                         /* process all incoming clients */
+    while (connctedfd = accept(listen_socket, (struct sockaddr*)&client_addr, &client_addr_len))                         /* process all incoming clients */
     {
-        client_addr_len = sizeof(client_addr);
-        connctedfd = accept(listen_socket, (struct sockaddr*)&client_addr, &client_addr_len);
         if (connctedfd == -1) {
             perror("accept()");
             exit(EXIT_FAILURE);
         }
+
+        client_addr_len = sizeof(client_addr);
 
         fprintf(
             stdout, "TCP connection accepted from %s:%d\n",
@@ -67,9 +66,10 @@ int main(int argc, char** argv) {
             ntohs(client_addr.sin_port)
         );
 
+        new_sock = (int*)malloc(sizeof(int));
+        *new_sock= connctedfd;
 
-        fp = fdopen(connctedfd, "r+");           /* convert into FILE* */
-        pthread_create(&child, 0, handle_client_connection, fp);       /* start thread */
+        pthread_create(&child, 0, handle_client_connection,  (void*)new_sock);       /* start thread */
         pthread_detach(child);                      /* don't track it */
     }
 
@@ -82,15 +82,25 @@ int main(int argc, char** argv) {
 
 void *handle_client_connection(void *arg)                    /* handle client connection thread */
 {	
-    FILE *fp = (FILE*)arg;            /* get & convert the data */
-	char s[100];
+    int fp = *(int*)arg;            /* get & convert the data */
+    int read_size;
+    char s[2000];
+    
 
-	   /* proc client's requests */
-	while (fgets(s, sizeof(s), fp) != 0  &&  strcmp(s, "bye\n") != 0)
-	{
-		printf("msg: %s", s);                  /* display message */
-		fputs(s, fp);                             /* echo it back */
-	}
-	fclose(fp);                   /* close the client's channel */
-	return 0;                           /* terminate the thread */
+    if((read_size = recv(fp, s, sizeof(s), 0)) == -1)
+    {
+        printf("SERVER: Recv error\n\terrno: %d\n", errno);
+        perror("");
+        exit(EXIT_FAILURE);
+    }
+    else if(read_size == 0)
+    {
+        printf("SERVER: Does not receive any packet...\n");
+        exit(EXIT_FAILURE);
+    }
+
+    s[read_size]='\0';
+printf("%s\n", s);
+    
+    return 0;                           /* terminate the thread */
 }
