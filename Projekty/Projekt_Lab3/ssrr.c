@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
      * NOP, SSRR, len, ptr, adr_IP_1, adr_IP_2, IP_docelowe */
     unsigned char ip_options[16] = {
         1, 0x89, 15, 4,
-        192,0,2,1,
+        192,168,1,1,
         195,136,186,1,
         213,172,178,41
     };
