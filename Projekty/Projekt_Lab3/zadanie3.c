@@ -5,22 +5,21 @@
  * Uruchamianie:        $ ./udp <adres IP lub nazwa domenowa> <numer portu>
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#ifndef __USE_BSD
-#define __USE_BSD
-#endif
-#include <netinet/ip.h>
-#define __FAVOR_BSD
-#include <netinet/udp.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <string.h>
-#include <error.h>
-#include "checksum.h"
+#include <stdio.h>//
+#include <stdlib.h>//
+#include <sys/socket.h>//
+#include <netinet/in.h>//
+
+#include <netinet/ip.h>//
+
+#include <netinet/tcp.h>//
+#include <arpa/inet.h>//
+#include <netdb.h>//
+#include <unistd.h>//
+#include <string.h>//
+#include <errno.h>//
+#include <error.h>//
+#include "checksum.h"//
 
 #define SOURCE_PORT 4545
 #define SOURCE_ADDRESS "192.0.2.1"
