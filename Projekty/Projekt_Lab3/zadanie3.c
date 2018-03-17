@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
     struct ip               *ip_header      = (struct ip *)datagram;
 
     /* Wskaznik na naglowek UDP (w buforze okreslonym przez 'datagram'): */
-    struct tcpphdr           *tcp_header     = (struct tcphdr *)
+    struct tcphdr           *tcp_header     = (struct tcphdr *)
             (datagram + sizeof(struct ip));
     /* Wskaznik na pseudo-naglowek (w buforze okreslonym przez 'datagram'): */
     struct phdr             *pseudo_header  = (struct phdr *)
