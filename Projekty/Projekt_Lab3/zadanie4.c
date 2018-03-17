@@ -101,11 +101,11 @@ int main(int argc, char** argv) {
         }
 
         /* Ustawienie opcji IP_HDRINCL: */
-        int option = 6;
+        int offset = 6;
         retval = setsockopt(
                      sockfd,
                      IPPROTO_IPV6, IPV6_CHECKSUM,
-                     &option, sizeof(int)
+                     &offset, sizeof(int)
                  );
 
         if (retval == -1) {
