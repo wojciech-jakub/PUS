@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family         =       AF_INET; /* Domena komunikacyjna (IPv4). */
     hints.ai_socktype       =       SOCK_RAW; /* Typ gniazda. */
-    hints.ai_protocol       =       IPPROTO_TCP /* Protokol. */
+    hints.ai_protocol       =       IPPROTO_TCP; /* Protokol. */
 
 
     retval = getaddrinfo(argv[1], NULL, &hints, &result);
