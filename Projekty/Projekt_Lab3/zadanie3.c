@@ -193,7 +193,7 @@ int main(int argc, char** argv) {
 
     fprintf(stdout, "Sending TCP...\n");
 
-    tcp_header->check = internet_checksum((unsigned short*) &pseudo_header,sizeof(struct phdr))
+    tcp_header->check = internet_checksum((unsigned short*) &pseudo_header,sizeof(struct phdr));
 
 
     while(1)
