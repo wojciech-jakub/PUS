@@ -184,11 +184,11 @@ int main(int argc, char** argv) {
     tcp_header->check = 0;
     tcp_header->urg_ptr	= 0;
 
-    pseudo_header.ip_src.s_addr = ip_header->ip_src.s_addr;
-    pseudo_header.ip_dst.s_addr = ip_header->ip_dst.s_addr;
-    pseudo_header.unused = 0;
-    pseudo_header.protocol = IPPROTO_TCP;
-    pseudo_header.length = htons(20);
+    pseudo_header->ip_src.s_addr = ip_header->ip_src.s_addr;
+    pseudo_header->ip_dst.s_addr = ip_header->ip_dst.s_addr;
+    pseudo_header->unused = 0;
+    pseudo_header->protocol = IPPROTO_TCP;
+    pseudo_header->length = htons(20);
 
 
     fprintf(stdout, "Sending TCP...\n");
