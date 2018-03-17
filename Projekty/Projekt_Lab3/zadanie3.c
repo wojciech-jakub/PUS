@@ -22,7 +22,7 @@
 #include "checksum.h"//
 
 #define SOURCE_PORT 4545
-#define SOURCE_ADDRESS "192.0.2.1"
+#define SOURCE_ADDRESS "192.168.1.14"
 
 /* Struktura pseudo-naglowka (do obliczania sumy kontrolnej naglowka UDP): */
 struct phdr {
@@ -196,21 +196,28 @@ int main(int argc, char** argv) {
     tcp_header->check = internet_checksum((unsigned short*) &pseudo_header,sizeof(struct phdr));
 
 
-    while(1)
-       {
-           retval = sendto(sockfd, datagram,ip_header->ip_len,0,rp->ai_addr, rp->ai_addrlen);
+    for (;;) {
 
-           if (retval == -1)
-           {
-               printf("Sendto error\n\terrno: %d\n", errno);
-               perror("");
-           }
-           else
-               printf ("Packet sent\n");
+        /*
+         * Prosze zauwazyc, ze pseudo-naglowek nie jest wysylany
+         * (ale jest umieszczony w buforze za naglowkiem UDP dla wygodnego
+         * obliczania sumy kontrolnej):
+         */
+        retval = sendto(
+                     sockfd,
+                     datagram, ip_header->ip_len,
+                     0,
+                     rp->ai_addr, rp->ai_addrlen
+                 );
 
+        if (retval == -1) {
+            perror("sendto()");
+        }
+        else
+          printf("SENDING PACKET");
 
-           sleep(1);
-       }
+        sleep(1);
+    }
 
     exit(EXIT_SUCCESS);
 }
