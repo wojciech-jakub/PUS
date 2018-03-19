@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
     unsigned char           data[32];
 
     /* Bufor na naglowek IP, naglowek UDP oraz pseudo-naglowek: */
-    unsigned char           datagramsizeof(struct icmphdr);
+    unsigned char           datagram(sizeof(struct icmphdr));
 
     struct icmphdr      *icmp_header          =(struct icmphdr*)(datagram);
     if (argc != 2) {
