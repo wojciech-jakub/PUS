@@ -12,6 +12,8 @@
  #include <netdb.h>
  #include <netinet/in.h>
  #include <arpa/inet.h>
+ #include <netinet/ip.h>
+
  #include <netinet/ip_icmp.h>
  #include <unistd.h>
  #include <errno.h>
