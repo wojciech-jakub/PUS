@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
     unsigned char           data[32];
 
     /* Bufor na naglowek IP, naglowek UDP oraz pseudo-naglowek: */
-    unsigned char           datagram[sizeof(struct icmphdr);
+    unsigned char           datagramsizeof(struct icmphdr);
 
     struct icmphdr      *icmp_header          =(struct icmphdr*)(datagram);
     if (argc != 2) {
@@ -160,8 +160,7 @@ int main(int argc, char** argv) {
 		        printf("ICMP: typ=%d, kod=%d, id=%4.X, nr sekwencyjny=%X\n",icmpheader->type,icmpheader->code,ntohs(icmpheader->un.echo.id),icmpheader->un.echo.sequence);
         }
       }
-      else
-      break;
+
 
 
 
