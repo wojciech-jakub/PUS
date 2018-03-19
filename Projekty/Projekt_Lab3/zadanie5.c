@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
     /* Bufor na naglowek IP, naglowek UDP oraz pseudo-naglowek: */
     unsigned char           datagram[sizeof(struct icmp_header) + sizeof(data)] = {0};
 
-    struct icmp_header      *icmp_header          =(struct icmphdr*)(datagram);
+    struct icmphdr      *icmp_header          =(struct icmphdr*)(datagram);
     if (argc != 2) {
         fprintf(
             stderr,
@@ -149,7 +149,7 @@ int main(int argc, char** argv) {
         sockaddr_in addresStruct;
 
         ip *ipheader = (ip*) datagram;
-        icmphdr *icmp_header = (icmphdr *) (datagram + sizeof(ip));
+        icmphdr *icmp_header = (icmphdr *)datagram;
 
         socklen_t addresStructSize = sizeof(addresStruct);
         for(i = 0 ; i < 4 ; i++)
