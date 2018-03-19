@@ -117,7 +117,8 @@ int main(int argc, char** argv) {
       pid_t pid = fork();
       if(pid == 0)
       {
-
+        unsigned char datagram[sizeof(icmphdr) ];
+        icmphdr *icmp_header = (icmphdr *)datagram;
         for (i = 0 ; i < 4 ; i++)
         {
           for (j = 0 ; j < 31 ; j++)
