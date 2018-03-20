@@ -6,6 +6,7 @@
 #define __USE_BSD
 #endif
 #include <netinet/ip.h>
+#include <netinet/ip6.h>
 #define __FAVOR_BSD
 #include <netinet/udp.h>
 #include <arpa/inet.h>
@@ -16,7 +17,7 @@
 #include "checksum.h"
 
 #define SOURCE_PORT 5555
-#define SOURCE_ADDRESS "192.168.0.250"
+#define SOURCE_ADDRESS "172.20.10.12"
 
 struct phdr {
     struct in_addr ip_src, ip_dst;
@@ -73,7 +74,7 @@ int main(int argc, char** argv) {
             continue;
         }
 
-        /* Ustawienie opcji IP_HDRINCL: */
+
         retval = setsockopt(
                      sockfd,
                      IPPROTO_IPV6, IPV6_CHECKSUM,
@@ -100,7 +101,7 @@ int main(int argc, char** argv) {
     /*********************************/
 
 
-
+    udp_header->uh_sport            =       htons (21000);
     udp_header->uh_dport            =       htons(atoi(argv[2]));
     udp_header->uh_ulen             =       htons(sizeof(struct udphdr));
 
