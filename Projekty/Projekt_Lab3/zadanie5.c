@@ -14,19 +14,19 @@
 #include <time.h>
 #include "checksum.h"
 
-// void messageRand(int size, char * message){
-// 	srand(time(0));
-//         const char * let = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";//62
-// 	int r = 0;
-// 	int i;
-// 	for(i = size; i < 63; i++){
-// 		r = rand() % 62;
-// 		message[i] = let[r];
-// 		/*message[i] = 'e';*/
-// 	}
-// 	message[63] = '\0';
-//
-// }
+void messageRand(int size, char * message){
+	srand(time(0));
+        const char * let = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";//62
+	int r = 0;
+	int i;
+	for(i = size; i < 63; i++){
+		r = rand() % 62;
+		message[i] = let[r];
+		/*message[i] = 'e';*/
+	}
+	message[63] = '\0';
+
+}
 
 
 
@@ -143,15 +143,15 @@ int main(int argc, char** argv){
                         (sockaddr*) &adr_struct,
                         &adr_struct_size );
             printf("\nOdebrano: \n");
-            printf("Adres hosta: \t\t %s \n", inet_ntoa(ip_header.ip_src));
-            printf("TTL pakietu: \t\t %d \n", ip_header.ip_ttl);
-            printf("Dlugosc naglowa: \t %d\n", ip_header.ip_hl);
-	    printf("Adres docelowy: \t %s \n", inet_ntoa(ip_header.ip_dst));
+            printf("Adres hosta: \t\t %s \n", inet_ntoa(ip_header->ip_src));
+            printf("TTL pakietu: \t\t %d \n", ip_header->ip_ttl);
+            printf("Dlugosc naglowa: \t %d\n", ip_header->ip_hl);
+	    printf("Adres docelowy: \t %s \n", inet_ntoa(ip_header->ip_dst));
             printf("ICMP info: \n");
-            printf("Type: \t\t\t %d\n", (int)icmp_header.type);
-            printf("Code: \t\t\t %d\n", icmp_header.code);
-            printf("ID: \t\t\t %d\n", icmp_header.un.echo.id);
-            printf("Nr sekewncyjny: \t %d\n\n", icmp_header.un.echo.sequence);
+            printf("Type: \t\t\t %d\n", (int)icmp_header->type);
+            printf("Code: \t\t\t %d\n", icmp_header->code);
+            printf("ID: \t\t\t %d\n", icmp_header->un.echo.id);
+            printf("Nr sekewncyjny: \t %d\n\n", icmp_header->un.echo.sequence);
         }
         exit(EXIT_SUCCESS);
     }else{
