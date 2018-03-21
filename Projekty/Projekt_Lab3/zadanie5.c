@@ -1,70 +1,45 @@
-/*
- * Data:                2009-02-27
- * Autor:               Jakub Gasior <quebes@mars.iti.pk.edu.pl>
- * Kompilacja:          $ gcc udp.c -o udp
- * Uruchamianie:        $ ./udp <adres IP lub nazwa domenowa> <numer portu>
- */
-
- #include <stdio.h>
- #include <stdlib.h>
- #include <sys/types.h>
- #include <sys/socket.h>
- #include <netdb.h>
- #include <netinet/in.h>
- #include <arpa/inet.h>
- #include <netinet/ip.h>
-
- #include <netinet/ip_icmp.h>
- #include <unistd.h>
- #include <errno.h>
- #include <string.h>
- #include <time.h>
- #include "checksum.h"
-
-#define SOURCE_PORT 4545
-#define SOURCE_ADDRESS "192.168.1.14"
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <netinet/ip.h>
+#include <arpa/inet.h>
+#include <netinet/ip_icmp.h>
+#include <unistd.h>
+#include <errno.h>
+#include <error.h>
+#include <string.h>
+#include <time.h>
+#include "checksum.h"
 
 
 
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv){
 
-    int                     sockfd; /* Deskryptor gniazda. */
-    int                     socket_option; /* Do ustawiania opcji gniazda. */
-    int                     retval; /* Wartosc zwracana przez funkcje. */
-    int                     ttl = 255;
+    int i;
 
-    /* Struktura zawierajaca wskazowki dla funkcji getaddrinfo(): */
+    int        ttl     =     128;
+    int        sockfd;               /* Deskryptor gniazda. */
+    int        retval;               /* Wartosc zwracana przez funkcje. */
+    int        pid;
+
+    const int icmp_size = sizeof(icmphdr);
+    struct addrinfo        *rp, *result;
     struct addrinfo         hints;
 
-    /*
-     * Wskaznik na liste zwracana przez getaddrinfo() oraz wskaznik uzywany do
-     * poruszania sie po elementach listy:
-     */
-    struct addrinfo         *rp, *result;
-
-    /* Zmienna wykorzystywana do obliczenia sumy kontrolnej: */
-    unsigned short          checksum;
-    unsigned char           data[32];
-
-    /* Bufor na naglowek IP, naglowek UDP oraz pseudo-naglowek: */
 
     if (argc != 2) {
-        fprintf(
-            stderr,
-            "Invocation: %s <HOSTNAME OR IP ADDRESS>\n",
-            argv[0]
-        );
-
+        fprintf(stderr, "Invocation: %s <HOSTNAME OR IP ADDRESS>\n", argv[0]);
         exit(EXIT_FAILURE);
     }
 
-    /* Wskazowki dla getaddrinfo(): */
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family         =       AF_INET; /* Domena komunikacyjna (IPv4). */
     hints.ai_socktype       =       SOCK_RAW; /* Typ gniazda. */
     hints.ai_protocol       =       IPPROTO_ICMP; /* Protokol. */
-
 
     retval = getaddrinfo(argv[1], NULL, &hints, &result);
     if (retval != 0) {
@@ -72,24 +47,21 @@ int main(int argc, char** argv) {
         exit(EXIT_FAILURE);
     }
 
-    /* Opcja okreslona w wywolaniu setsockopt() zostanie wlaczona: */
-    socket_option = 1;
 
     /* Przechodzimy kolejno przez elementy listy: */
     for (rp = result; rp != NULL; rp = rp->ai_next) {
 
-        /* Utworzenie gniazda dla protokolu UDP: */
+        /* Utworzenie gniazda dla protokolu ICMP: */
         sockfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
         if (sockfd == -1) {
             perror("socket()");
             continue;
         }
 
-        /* Ustawienie opcji IP_HDRINCL: */
+        /* Ustawienie opcji IP: */
         retval = setsockopt(
-                     sockfd,
-                     IPPROTO_IP, IP_TTL,
-                     (const char*)&ttl, sizeof(int)
+                     sockfd, IPPROTO_IP, IP_TTL,
+                     &ttl, sizeof(int)
                  );
 
         if (retval == -1) {
@@ -97,75 +69,85 @@ int main(int argc, char** argv) {
             exit(EXIT_FAILURE);
         } else {
             /* Jezeli gniazdo zostalo poprawnie utworzone i
-             * opcja IP_HDRINCL ustawiona: */
+             * opcje IP ustawione: */
             break;
         }
     }
 
-    /* Jezeli lista jest pusta (nie utworzono gniazda): */
     if (rp == NULL) {
         fprintf(stderr, "Client failure: could not create socket.\n");
         exit(EXIT_FAILURE);
     }
 
-    /********************************/
-    /* Wypelnienie pol naglowka ICMP: */
-    /********************************/
+    pid = fork();
 
-    int i = 0;
-    int j = 0;
-      pid_t pid = fork();
-      if(pid == 0)
-      {
-        unsigned char datagram[sizeof(icmphdr) ];
-        icmphdr *icmp_header = (icmphdr *)datagram;
-        for (i = 0 ; i < 4 ; i++)
-        {
-          for (j = 0 ; j < 31 ; j++)
-          {
-            datagram[sizeof(icmphdr) + i]=rand() % 58 + 65;
-          }
-          datagram[sizeof(icmp_header) + 31] = '\0';
 
-          icmp_header->type = ICMP_ECHO;
-          icmp_header->code = 0;
-          icmp_header->un.echo.id = htons(getpid());
-          icmp_header->un.echo.sequence = htons(i);
-          icmp_header->checksum=0;
-          icmp_header->checksum = internet_checksum((unsigned short*)datagram,sizeof(datagram));
-          retval = sendto(socketDescriptor,(const char*) icmp_header,sizeof(datagram),0,rp->ai_addr,rp->ai_addrlen);
-          if(retval==-1)
-          {
-            perror("sendto()");
-          }
-          printf("SENDING ICMP REQUEST\n", );
-          Sleep(1);
+    if ( pid == 0 ) {
+        for (i = 0; i < 4; i++){
+            char datagram[32];
+            memset(datagram, 0, 32);
+            icmphdr* icmp_header = (icmphdr*) datagram;
+            srand((unsigned int)time(NULL));
 
+		        for(int i=0; i<31; i++)
+			      datagram[sizeof(icmphdr) + i]=rand() % 58 + 65;
+
+            srand(time(NULL));
+            icmp_header->type                =       ICMP_ECHO;
+            icmp_header->code                =       0;
+            icmp_header->un.echo.id          =       htons(getpid());
+            icmp_header->un.echo.sequence    =       htons(i);
+            icmp_header->checksum            =       internet_checksum(
+                                                        (unsigned short *)datagram,
+                                                        sizeof(datagram));
+            retval = sendto( sockfd, (const char*) icmp_header, sizeof(datagram), 0, rp->ai_addr, rp->ai_addrlen );
+            if (retval == -1) {
+                 perror("sentdo()");
+                 exit(EXIT_FAILURE);
+            }
+            //fprintf(stdout, "Send ICMP message...\n");
+            sleep(2);
         }
         exit(EXIT_SUCCESS);
-      }
-      else if (pid > 0)
-      {
-        unsigned char datagram[sizeof(icmphdr) + dataSize];
-        sockaddr_in addresStruct;
 
-        ip *ipheader = (ip*) datagram;
-        icmphdr *icmp_header = (icmphdr *)datagram;
+    }else if( pid > 0 ){
+        //printf("Proces potomny\n ");
+        char datagram[32];
 
-        socklen_t addresStructSize = sizeof(addresStruct);
-        for(i = 0 ; i < 4 ; i++)
-        {
-          recvfrom(socketDescriptor, datagram, sizeof(datagram), 0, (sockaddr *) &addresStruct, &addresStructSize);
+        sockaddr_in adr_struct;
+        ip* ip_header = ( ip *) datagram;
+        icmphdr* icmp_header = (icmphdr*) (datagram + sizeof(ip));
+        socklen_t adr_struct_size  = sizeof( adr_struct );
 
-          printf("Wiadomosc od: %s, TTL= %d, Rozmiar naglowka = %d, Adres Docelowy = %s\n", srcaddr, ipheader->ip_ttl, sizeof(ipheader)*8, dstaddr);
-		        printf("ICMP: typ=%d, kod=%d, id=%4.X, nr sekwencyjny=%X\n",icmpheader->type,icmpheader->code,ntohs(icmpheader->un.echo.id),icmpheader->un.echo.sequence);
+        for(i = 0; i < 4; i++){
+            recvfrom    (sockfd,
+                        datagram,
+                        sizeof(datagram),
+                        0,
+                        (sockaddr*) &adr_struct,
+                        &adr_struct_size );
+            printf("\nOdebrano: \n");
+            printf("Adres hosta: \t\t %s \n", inet_ntoa(ip_header->ip_src));
+            printf("TTL pakietu: \t\t %d \n", ip_header->ip_ttl);
+            printf("Dlugosc naglowa: \t %d\n", ip_header->ip_hl);
+	    printf("Adres docelowy: \t %s \n", inet_ntoa(ip_header->ip_dst));
+            printf("ICMP info: \n");
+            printf("Type: \t\t\t %d\n", (int)icmp_header->type);
+            printf("Code: \t\t\t %d\n", icmp_header->code);
+            printf("ID: \t\t\t %d\n", icmp_header->un.echo.id);
+            printf("Nr sekewncyjny: \t %d\n\n", icmp_header->un.echo.sequence);
         }
-      }
+        exit(EXIT_SUCCESS);
+    }else{
+        perror("fork()");
+        exit(EXIT_FAILURE);
+    }
 
 
 
 
 
 
-    exit(EXIT_SUCCESS);
+
+	return 0;
 }
