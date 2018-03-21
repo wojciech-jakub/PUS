@@ -14,19 +14,6 @@
 #include <time.h>
 #include "checksum.h"
 
-void messageRand(int size, char * message){
-	srand(time(0));
-        const char * let = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";//62
-	int r = 0;
-	int i;
-	for(i = size; i < 63; i++){
-		r = rand() % 62;
-		message[i] = let[r];
-		/*message[i] = 'e';*/
-	}
-	message[63] = '\0';
-
-}
 
 
 
@@ -97,10 +84,15 @@ int main(int argc, char** argv){
 
     if ( pid == 0 ) {
         for (i = 0; i < 4; i++){
-            char datagram[63];
-            memset(datagram, 0, 63);
+            char datagram[32];
+            memset(datagram, 0, 32);
             icmphdr* icmp_header = (icmphdr*) datagram;
-            messageRand(icmp_size, datagram);
+            srand((unsigned int)time(NULL));
+
+        		for(int i=0; i<31; i++)
+        			datagram[sizeof(icmphdr) + i]=rand() % 58 + 65;
+
+        		datagram[sizeof(icmp_header) + 31] = '\0';
 
             /* Wypelnienie pol naglowka ICMP Echo: */
             srand(time(NULL));
@@ -128,7 +120,7 @@ int main(int argc, char** argv){
 
     }else if( pid > 0 ){
         //printf("Proces potomny\n ");
-        char datagram[63];
+        char datagram[32];
 
         sockaddr_in adr_struct;
         ip* ip_header = ( ip *) datagram;
