@@ -14,6 +14,19 @@
 #include <time.h>
 #include "checksum.h"
 
+void messageRand(int size, char * message){
+	srand(time(0));
+        const char * let = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";//62
+	int r = 0;
+	int i;
+	for(i = size; i < 63; i++){
+		r = rand() % 62;
+		message[i] = let[r];
+		/*message[i] = 'e';*/
+	}
+	message[63] = '\0';
+
+}
 
 
 
@@ -84,19 +97,22 @@ int main(int argc, char** argv){
 
     if ( pid == 0 ) {
         for (i = 0; i < 4; i++){
-            char datagram[32];
-            memset(datagram, 0, 32);
+            char datagram[63];
+            memset(datagram, 0, 63);
             icmphdr* icmp_header = (icmphdr*) datagram;
-            srand((unsigned int)time(NULL));
+            messageRand(icmp_size, datagram);
 
-		        for(int i=0; i<31; i++)
-			      datagram[sizeof(icmphdr) + i]=rand() % 58 + 65;
-
+            /* Wypelnienie pol naglowka ICMP Echo: */
             srand(time(NULL));
+            /* Typ komunikatu: */
             icmp_header->type                =       ICMP_ECHO;
+            /* Kod komunikatu: */
             icmp_header->code                =       0;
+            /* Identyfikator: */
             icmp_header->un.echo.id          =       htons(getpid());
-            icmp_header->un.echo.sequence    =       htons(i);
+            /* Numer sekwencyjny: */
+            icmp_header->un.echo.sequence    =       htons(i); // zwieksza wraz z petla
+            /* Suma kontrolna (plik checksum.h): */
             icmp_header->checksum            =       internet_checksum(
                                                         (unsigned short *)datagram,
                                                         sizeof(datagram));
@@ -112,7 +128,7 @@ int main(int argc, char** argv){
 
     }else if( pid > 0 ){
         //printf("Proces potomny\n ");
-        char datagram[32];
+        char datagram[63];
 
         sockaddr_in adr_struct;
         ip* ip_header = ( ip *) datagram;
