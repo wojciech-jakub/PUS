@@ -25,10 +25,13 @@ int main(int argc, char** argv){
     int        sockfd;               /* Deskryptor gniazda. */
     int        retval;               /* Wartosc zwracana przez funkcje. */
     int        pid;
-
+    char datagram[32];
     const int icmp_size = sizeof(icmphdr);
     struct addrinfo        *rp, *result;
     struct addrinfo         hints;
+    struct icmphdr        *icmp_header         = (struct icmphdr *)(datagram);
+    icmphdr* icmp_header = (icmphdr*) datagram;
+
 
 
     if (argc != 2) {
@@ -84,9 +87,8 @@ int main(int argc, char** argv){
 
     if ( pid == 0 ) {
         for (i = 0; i < 4; i++){
-            char datagram[32];
+
             memset(datagram, 0, 32);
-            icmphdr* icmp_header = (icmphdr*) datagram;
             srand((unsigned int)time(NULL));
 
         		for(int i=0; i<31; i++)
