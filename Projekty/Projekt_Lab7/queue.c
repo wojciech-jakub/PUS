@@ -1,5 +1,3 @@
-
-
 /*
  * Data:                2009-04-15
  * Autor:               Jakub Gasior <quebes@mars.iti.pk.edu.pl>
@@ -17,12 +15,6 @@
 #include <limits.h> /* Wymagane przez <linux/netfilter_ipv4.h> (MIN_INT, ...) */
 #include <linux/netfilter_ipv4.h> /* Nazwy punktow zaczepienia Netfilter. */
 #include <libnetfilter_queue/libnetfilter_queue.h>
-
-#include "libqueue.h"
-
-#include <linux/ip.h>
-#include <linux/icmp.h>
-
 
 static int callback(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
                     struct nfq_data *nfa, void *data);
@@ -122,35 +114,14 @@ static int callback(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
 
     fprintf(stdout, "Leaving callback.\n\n");
 
-    //--------------------------------------------------------------------
-
-    size_t icmpHeaderSize=sizeof(struct icmphdr);
-    size_t ipHeaderSize=sizeof(struct iphdr);
-
-    unsigned char *packet;
-    size_t packetSize= nfq_get_payload(nfa, &packet);
-
-    //packet     = ipHeader + icmpHeader + packetBody
-    //packetSize = ipHeaderSize + icmpHeaderSize + packetBodySize
-
-    struct icmphdr *packetIcmpHeader = (struct icmphdr*)(packet + ipHeaderSize);
-    char *packetBody = (char *)(packet + icmpHeaderSize + ipHeaderSize);
-
-    size_t packetBodySize = packetSize - (icmpHeaderSize + ipHeaderSize);
-
-    //zmiana danych w pakietach icmp
-    swap_bytes(packetBody ,packetBodySize);
-
-    //zerowanie i tworzenie nowej sumy kontrolnej
-    packetIcmpHeader->checksum = 0;
-    packetIcmpHeader->checksum = internet_checksum((unsigned short *) packet, packetSize);
-
-
-    //określenie werdyktu
-    int verdict = nfq_set_verdict(qh, id, NF_ACCEPT, packetSize, packet);
-    return verdict;
+    /*
+     * Okreslenie werdyktu.
+     * Pakiet nie jest modyfikowany (nie zachodzi koniecznosc podania
+     * bufora, w ktorym znajduje sie zmodyfikowany pakiet):
+     */
+    return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
 }
-//------------------------------------------------------------------------
+
 
 static u_int32_t print_packet(struct nfq_data *tb) {
 
@@ -159,7 +130,7 @@ static u_int32_t print_packet(struct nfq_data *tb) {
     struct nfqnl_msg_packet_hw      *hwph; /* Adres warstwy lacza anych. */
     u_int32_t                       ifi; /* Indeks interfejsu. */
     int                             retval; /* Wartosc zwracana. */
-    unsigned char                            *data; /* Bufor na payload. */
+    char                            *data; /* Bufor na payload. */
     char                            *hook; /* Punkt zaczepienia Netf. */
     char                            ifname[IF_NAMESIZE]; /* Nazwa interf. */
 
