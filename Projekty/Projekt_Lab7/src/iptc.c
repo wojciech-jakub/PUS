@@ -1,10 +1,3 @@
-/*
- * Data:                2009-04-15
- * Autor:               Jakub Gasior <quebes@mars.iti.pk.edu.pl>
- * Kompilacja:          $ gcc iptc.c -o iptc -liptc
- * Uruchamianie:        $ ./iptc -h
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -13,7 +6,6 @@
 #include <net/if.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <iptables.h>
 #include <libiptc/libiptc.h>
 
 /* Zdefiniowane operacje: */
@@ -254,12 +246,12 @@ struct rule* parse(int argc, char ** argv) {
 }
 
 
-void delete_rule(iptc_handle_t *h, struct rule* r) {
+void delete_rule(struct xtc_handle *h, struct rule* r) {
 
     int retval;
 
     /* Sprawdzenie czy podany lancuch wystepuje w tablicy: */
-    retval = iptc_is_chain(r->chain, *h);
+    retval = iptc_is_chain(r->chain, h);
     if (!retval) {
         fprintf(stderr, "Chain '%s' does not exist in table '%s'!\n",
                 r->chain, r->table);
@@ -287,7 +279,7 @@ void delete_rule(iptc_handle_t *h, struct rule* r) {
 }
 
 
-void create_chain(iptc_handle_t *h, struct rule* r) {
+void create_chain(struct xtc_handle *h, struct rule* r) {
 
     int retval;
 
@@ -314,7 +306,7 @@ void create_chain(iptc_handle_t *h, struct rule* r) {
 int main(int argc, char **argv) {
 
     struct rule     *r; /* Wskaznik na regule. */
-    iptc_handle_t   h; /* Uchwyt. */
+    struct xtc_handle  * h; /* Uchwyt. */
 
     /* parse() zwraca regule na podstawie argumentow wywolania programu: */
     r = parse(argc, argv);
@@ -332,9 +324,9 @@ int main(int argc, char **argv) {
 
     /* Usuniecie reguly: */
     if (r->operation == DELETE_RULE) {
-        delete_rule(&h, r);
+        delete_rule(h, r);
     } else if (r->operation == NEW_CHAIN) { /* Utworzenie lancucha. */
-        create_chain(&h, r);
+        create_chain(h, r);
     }
 
     /* Zwolnienie pamieci zaalokowanej dla reguly w funkcji parse(): */
@@ -343,7 +335,7 @@ int main(int argc, char **argv) {
     if (h) {
         /* Zamkniecie uchwytu (funkcja nie powinna sie wywolac,
          * poniewaz iptc_commit() zwolnila uchwyt 'h'): */
-        iptc_free(&h);
+        iptc_free(h);
     }
 
     exit(EXIT_SUCCESS);
