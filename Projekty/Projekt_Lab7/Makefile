@@ -29,13 +29,13 @@ libqueue.o: $(SRCDIR)/libqueue.c
 	$(CC) $(CFLAGS) -c $(SRCDIR)/$(basename $@).c -o $(BINDIR)/$(basename $@).o
 
 iptc: iptc.o
-	$(CC) $(CFLAGS) $(BINDIR)/$@.o -liptc -o $(BINDIR)/$@
+	$(CC) $(CFLAGS) $(BINDIR)/$@.o -lip4tc -o $(BINDIR)/$@
 
 iptc.o: $(SRCDIR)/iptc.c
 	$(CC) $(CFLAGS) -c $(SRCDIR)/$(basename $@).c -o $(BINDIR)/$(basename $@).o
 
 iptcmod: iptcmod.o
-	$(CC) $(CFLAGS) $(BINDIR)/$@.o -liptc -o $(BINDIR)/$@
+	$(CC) $(CFLAGS) $(BINDIR)/$@.o -lip4tc -o $(BINDIR)/$@
 
 iptcmod.o: $(SRCDIR)/iptcmod.c
 	$(CC) $(CFLAGS) -c $(SRCDIR)/$(basename $@).c -o $(BINDIR)/$(basename $@).o
