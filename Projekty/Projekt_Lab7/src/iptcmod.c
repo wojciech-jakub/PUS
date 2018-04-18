@@ -1,10 +1,3 @@
-/*
- * Data:                2009-04-15
- * Autor:               Jakub Gasior <quebes@mars.iti.pk.edu.pl>
- * Kompilacja:          $ gcc iptc.c -o iptc -lip4tc
- * Uruchamianie:        $ ./iptc -h
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -24,22 +17,15 @@ enum opcode {
     POLICY_DROP
 };
 
-/* Regula - zawiera argumenty wywolania programu: */
+
 struct rule {
     enum opcode     operation; /* Rodzaj operacji, np. '-D' (DELETE_RULE) */
     const char      *chain; /* Nazwa lancucha. */
     const char      *table; /* Nazwa tablicy ('-t <table>') */
-    /*
-     * Numer reguly (numeracja od 0). W programie iptables
-     * reguly sa wyswietlane od 1. W celu zachowania spojnosci, od podanej
-     * w argumencie wywolania liczby zostanie odjete 1 (w funkcji parse()):
-     */
     int             rule_num;
 };
 
-/* Funkcja odpowiedzialna za zaalokowanie obszaru pamieci o rozmiarze 'size'. */
 void *s_malloc(size_t size) {
-
     void* ptr;
 
     ptr = malloc(size);
@@ -51,23 +37,15 @@ void *s_malloc(size_t size) {
     return ptr;
 }
 
-/*
- * Argumentem funkcji jest adres wskaznika na obszar pamieci.
- * Funkcja zwalnia pamiec i ustawia wskaznik na NULL.
- */
+
 void s_free(void** ptr) {
 
     if (*ptr) {
         free(*ptr);
         *ptr = NULL;
     }
-
 }
 
-/*
- * Argumentem funkcji jest adres wskaznika na strukture 'rule'.
- * Funkcja zwalnia pamiec i ustawia wskaznik na NULL.
- */
 void free_rule(struct rule** ptr) {
 
     struct rule* r = *ptr;
@@ -80,7 +58,6 @@ void free_rule(struct rule** ptr) {
 
 }
 
-/* Funkcja wypisuje informacje o bledzie i ustawia flage bledu: */
 void parse_error(char* str, int* error) {
     fprintf(stderr, "%s", str);
     *error = 1;
@@ -215,15 +192,15 @@ struct rule* parse(int argc, char ** argv) {
             /* Regula DELETE_RULE poprawna: */
             r->operation = DELETE_RULE;
         }
-//-----------------------------------------------------------
-			//ustawienie domyślnej polityki (-P)
 
+
+
+        // utawienie domyĹ›lnej polityki (-P)
 		else if (!strcmp(*argv, "-P"))
 		{
             if (r->operation != NONE)
 			{
-                parse_error("Can't use -P with other option.\n",
-                            &error);
+                parse_error("Can't use -P with other option.\n", &error);
                 break;
             }
 
@@ -270,7 +247,8 @@ struct rule* parse(int argc, char ** argv) {
 				break;
 			}
         }
-		//-------------------------------------------------------------
+
+
 			else if (!strcmp(*argv, "-h")) { /* Pomoc. */
 
             fprintf(stdout,
@@ -278,7 +256,7 @@ struct rule* parse(int argc, char ** argv) {
                     "-D <chain> <rule num> Delete rule from chain\n"
                     "-N <chain> Create user-defined chain\n"
                     "-t <table> Table to manipulate\n"
-					"-P <chain> <default policy> Set default polcy for chain\n");
+					"-P <chain> <default policy> Set default policy for chain\n");
 
             free_rule(&r);
             exit(EXIT_SUCCESS);
@@ -378,7 +356,7 @@ void policy_accept(struct xtc_handle *h, struct rule* r)
 		perror("iptc_is_chain");
 		exit(EXIT_FAILURE);
 	}
-	//sprawdzenie czy łańcuch jest łańcuchem wbudowanym
+	/* Sprawdzenie czy lancuch jest Ĺ‚aĹ„cuchem wbudowanym */
 	if(!iptc_builtin(r->chain,h))
 	{
 
@@ -386,7 +364,7 @@ void policy_accept(struct xtc_handle *h, struct rule* r)
 		perror("iptc_builtin");
 		exit(EXIT_FAILURE);
 	}
-	//ustawienie domyślnej polityki
+	/* Ustawienie domyslnej polityki */
 	if (!iptc_set_policy(r->chain, IPTC_LABEL_ACCEPT, NULL, h))
 	{
 		perror("iptc_set_policy");
@@ -413,25 +391,22 @@ void policy_drop(struct xtc_handle *h, struct rule* r)
 		perror("iptc_is_chain");
 		exit(EXIT_FAILURE);
 	}
-	//sprawdzenie czy łańcuch jest łańcuchem wbudowanym
+	/* Sprawdzenie czy lancuch jest wbudowany */
 	if(!iptc_builtin(r->chain,h))
 	{
-		//łańcuch nie jest łańcuchem wbudowanym!
+		/* W przypadku gdy nie jest wbudowanym*/
 		fprintf(stderr, "chain is not builtin!");
 		perror("iptc_builtin");
 		exit(EXIT_FAILURE);
 	}
-	//ustawienie domyślnej polityki
+	/* Ustawienie domyslnej polityki */
 	if (!iptc_set_policy(r->chain, IPTC_LABEL_DROP, NULL, h))
 	{
 		perror("iptc_set_policy");
 		exit(EXIT_FAILURE);
 	}
 
-	/*
-     * Zatwierdzenie zmian. Funkcja zwalnia pamiec zaalokowana dla 'h' i
-     * ustawia uchwyt na NULL:
-     */
+
 	if (!iptc_commit(h))
 	{
 		fprintf(stderr, "iptc_commit(): %s!\n",
@@ -442,10 +417,9 @@ void policy_drop(struct xtc_handle *h, struct rule* r)
 
 int main(int argc, char **argv) {
 
-    struct rule     *r; /* Wskaznik na regule. */
-    struct xtc_handle  * h; /* Uchwyt. */
+    struct rule     *r;
+    struct xtc_handle  * h;
 
-    /* parse() zwraca regule na podstawie argumentow wywolania programu: */
     r = parse(argc, argv);
     if (!r) {
         exit(EXIT_FAILURE);
@@ -459,34 +433,29 @@ int main(int argc, char **argv) {
     }
 
 
-    /* Usuniecie reguly: */
-    if (r->operation == DELETE_RULE) {
+    if (r->operation == DELETE_RULE) { /* Usuniecie reguly: */
         delete_rule(h, r);
-    } else if (r->operation == NEW_CHAIN) { /* Utworzenie lancucha. */
+    }
+
+    else if (r->operation == NEW_CHAIN) { /* Utworzenie lancucha. */
         create_chain(h, r);
     }
 
-	else if (r->operation == NEW_CHAIN)
-	{
-		/* Utworzenie lancucha. */
+	else if (r->operation == NEW_CHAIN){ /* Utworzenie lancucha. */
         create_chain(h, r);
     }
-	else if (r->operation == POLICY_ACCEPT)
-	{	//ustawienie domyślnej polityki accept dla łańcucha
+
+	else if (r->operation == POLICY_ACCEPT){ /* Ustawienie domyslnej polityki accept dla lancucha */
 		policy_accept(h, r);
 	}
-	else if (r->operation == POLICY_DROP)
-	{
-		//ustawienie domyślnej polityki drop dla łańcucha
+
+	else if (r->operation == POLICY_DROP){ /* Ustawienie domyslnej polityki drop dla lancucha */
 		policy_drop(h, r);
 	}
 
-    /* Zwolnienie pamieci zaalokowanej dla reguly w funkcji parse(): */
     free_rule(&r);
 
     if (h) {
-        /* Zamkniecie uchwytu (funkcja nie powinna sie wywolac,
-         * poniewaz iptc_commit() zwolnila uchwyt 'h'): */
         iptc_free(h);
     }
 
