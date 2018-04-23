@@ -52,14 +52,13 @@ int main(int argc, char** argv) {
     }
 
     memset(&initmsg, 0, sizeof(initmsg));
-    initmsg.sinit_num_ostreams = 3;
-    initmsg.sinit_max_instreams = 4;
+    initmsg.sinit_num_ostreams = 4;
+    initmsg.sinit_max_instreams = 3;
     initmsg.sinit_max_attempts = 5;
 
     retval = setsockopt(sockfd, IPPROTO_SCTP, SCTP_INITMSG, &initmsg, sizeof (initmsg));
 
-    if (retval != 0)
-    {
+    if (retval != 0){
         perror("setsockopt()");;
         exit(EXIT_FAILURE);
     }
@@ -77,19 +76,17 @@ int main(int argc, char** argv) {
     retval = getsockopt(sockfd, SOL_SCTP, SCTP_STATUS,(void *) &s_status, (socklen_t *) & slen);
 
     printf ("ID: %d\n", s_status.sstat_assoc_id);
-    printf ("STAN: %d\n", s_status.sstat_state);
+    printf ("Stan: %d\n", s_status.sstat_state);
     printf ("Liczba strumieni wychodzacych: %d\n", s_status.sstat_instrms);
     printf ("Liczba strumieni przychodzacych: %d\n", s_status.sstat_outstrms);
 
-    for (i = 0; i <initmsg.sinit_num_ostreams - 1; i++)
-    {
+    for (i = 0; i <initmsg.sinit_num_ostreams - 1; i++) {
         memset(buffer, 0, sizeof(buffer));
         retval = sctp_recvmsg(sockfd, (void *) buffer, BUFF_SIZE,(struct sockaddr *) NULL, 0, &s_sndrcvinfo, &flags);
 
-        if (retval > 0)
-	    {
+        if (retval > 0){
             buffer[retval] = 0;
-            printf ("(Nr strumienia: %d) %s\n", s_sndrcvinfo.sinfo_stream, buffer);
+            printf ("Nr strumienia: %d %s\n", s_sndrcvinfo.sinfo_stream, buffer);
 
         }
     }

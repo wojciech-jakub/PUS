@@ -20,8 +20,6 @@ int main(int argc, char** argv) {
     struct sockaddr_in      servaddr;
     struct sctp_initmsg     initmsg;
     char                    buffer[BUFF_SIZE];
-
-    // do pobrania czasu czasu
     time_t                  t;
     struct tm               tm;
 
@@ -46,10 +44,10 @@ int main(int argc, char** argv) {
         exit(EXIT_FAILURE);
     }
 
-    // definiowanie strumieni
     memset (&initmsg, 0, sizeof (initmsg));
     initmsg.sinit_num_ostreams = 3;
-    initmsg.sinit_max_instreams = 50;
+    initmsg.sinit_max_instreams = 4;
+    initmsg.sinit_max_attempts = 5;
 
     retval = setsockopt (listenfd, IPPROTO_SCTP, SCTP_INITMSG, &initmsg, sizeof (initmsg));
     if (retval != 0) {
@@ -64,8 +62,7 @@ int main(int argc, char** argv) {
     while(1) {
         connfd = accept(listenfd, NULL, (int *) NULL);
 
-        if (connfd == -1)
-	    {
+        if (connfd == -1){
             perror("accept()");
             exit(EXIT_FAILURE);
         }
@@ -73,29 +70,26 @@ int main(int argc, char** argv) {
         printf ("server accept\n");
         fflush(stdout);
 
-        // pobranie daty i czasu
+        // get time
         t = time(NULL);
         tm = *localtime(&t);
         memset(buffer, 0, sizeof(buffer));
-        sprintf (buffer, "Aktualna data: %d.%d.%d", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
+        sprintf (buffer, "Data: %d.%d.%d", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
 
-	    // wyslanie daty
+	    // send date
         retval = sctp_sendmsg (connfd, buffer, (size_t) strlen (buffer), NULL, 0, 0, 0, 0, 0, 0);
-
-        if (retval == -1)
-        {
+        if (retval == -1){
             perror("sctp_sendmsg() data");
             exit(EXIT_FAILURE);
         }
 
         memset(buffer, 0, sizeof(buffer));
-        sprintf (buffer, "Aktualny czas: %d:%d:%d", tm.tm_hour, tm.tm_min, tm.tm_sec);
+        sprintf (buffer, "Czas: %d:%d:%d", tm.tm_hour, tm.tm_min, tm.tm_sec);
 
-        //wyslanie czasu
+        // send time
         retval = sctp_sendmsg (connfd, buffer, (size_t) strlen (buffer), NULL, 0, 0, 0, 1, 0, 0);
 
-        if (retval == -1)
-        {
+        if (retval == -1){
             perror("sctp_sendmsg() czas");
             exit(EXIT_FAILURE);
         }
