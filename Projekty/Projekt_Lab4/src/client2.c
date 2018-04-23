@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
 
     memset(&initmsg, 0, sizeof(initmsg));
     initmsg.sinit_num_ostreams = 3;
-    initmsg.sinit_max_instreams = 3;
+    initmsg.sinit_max_instreams = 4;
     initmsg.sinit_max_attempts = 5;
 
     retval = setsockopt(sockfd, IPPROTO_SCTP, SCTP_INITMSG, &initmsg, sizeof (initmsg));
