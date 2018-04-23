@@ -76,8 +76,8 @@ int main(int argc, char** argv) {
     slen = sizeof(s_status);
     retval = getsockopt(sockfd, SOL_SCTP, SCTP_STATUS,(void *) &s_status, (socklen_t *) & slen);
 
-    printf ("Id asocjacji: %d\n", s_status.sstat_assoc_id);
-    printf ("Stan asocjacji: %d\n", s_status.sstat_state);
+    printf ("ID: %d\n", s_status.sstat_assoc_id);
+    printf ("STAN: %d\n", s_status.sstat_state);
     printf ("Liczba strumieni wychodzacych: %d\n", s_status.sstat_instrms);
     printf ("Liczba strumieni przychodzacych: %d\n", s_status.sstat_outstrms);
 
