@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
         exit(EXIT_FAILURE);
     }
     tryb = atoi(argv[2]);
-    
+
     if(tryb != 0 && tryb != 1){
         fprintf(stderr, "Tryb 0 lub 1");
         exit(EXIT_FAILURE);

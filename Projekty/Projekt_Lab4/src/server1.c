@@ -1,10 +1,3 @@
-/*
- * Data:                2009-03-01
- * Autor:               Jakub Gasior <quebes@mars.iti.pk.edu.pl>
- * Kompilacja:          $ gcc server1.c -o server1
- * Uruchamianie:        $ ./server1 <numer portu>
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
