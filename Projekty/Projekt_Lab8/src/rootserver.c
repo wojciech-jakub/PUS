@@ -11,19 +11,12 @@
 
 int main(int argc, char** argv) {
 
-    /* Deskryptory dla gniazda nasluchujacego i polaczonego: */
     int             listenfd, connfd;
-
-    /* Gniazdowe struktury adresowe (dla klienta i serwera): */
     struct          sockaddr_in client_addr, server_addr;
-
-    /* Rozmiar struktur w bajtach: */
     socklen_t       client_addr_len, server_addr_len;
-
-    /* Bufor dla adresu IP klienta w postaci kropkowo-dziesietnej: */
     char            addr_buff[256];
-
     unsigned int    port_number;
+    int             user_id;
 
     uid_t           ruid, euid, suid; /* Identyfikatory uzytkownika. */
 
@@ -33,12 +26,8 @@ int main(int argc, char** argv) {
     }
 
     port_number = atoi(argv[1]);
-    int uid=atoi(argv[2]);
+    user_id = atoi(argv[2]);
 
-    /*
-     * Tylko programy uruchamione przez roota lub z ustawionym bitem SUID moga
-     * powiazac gniazdo z numerem portu < 1024.
-     */
     if (port_number < 1024) {
         if (geteuid() != 0) {
             fprintf(stderr, "You need root privileges to "
@@ -54,17 +43,12 @@ int main(int argc, char** argv) {
         exit(EXIT_FAILURE);
     }
 
-    /* Wyzerowanie struktury adresowej serwera: */
-    memset(&server_addr, 0, sizeof(server_addr));
-    /* Domena komunikacyjna (rodzina protokolow): */
-    server_addr.sin_family          =       AF_INET;
-    /* Adres nieokreslony (ang. wildcard address): */
-    server_addr.sin_addr.s_addr     =       htonl(INADDR_ANY);
-    /* Numer portu: */
-    server_addr.sin_port            =       htons(port_number);
-    /* Rozmiar struktury adresowej serwera w bajtach: */
-    server_addr_len                 =       sizeof(server_addr);
 
+    memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sin_family          =       AF_INET;
+    server_addr.sin_addr.s_addr     =       htonl(INADDR_ANY);
+    server_addr.sin_port            =       htons(port_number);
+    server_addr_len                 =       sizeof(server_addr);
 
 
     /* Pobranie identyfikatorow uzytkownika (real, effective, save set). */
@@ -76,7 +60,6 @@ int main(int argc, char** argv) {
     fprintf(stdout, "UID: %u, EUID: %u, SUID: %u\n", ruid, euid, suid);
 
 
-
     fprintf(stdout, "Binding to port %u...\n", port_number);
     /* Powiazanie "nazwy" (adresu IP i numeru portu) z gniazdem: */
     if (bind(listenfd, (struct sockaddr*) &server_addr, server_addr_len) == -1) {
@@ -85,8 +68,8 @@ int main(int argc, char** argv) {
     }
 
 
-    //ustawienie uid
-    setuid(uid);
+    // set UID
+    setuid(user_id);
 
     if (getresuid(&ruid, &euid, &suid) == -1) {
         perror("getresgid()");
@@ -100,8 +83,6 @@ int main(int argc, char** argv) {
         fprintf(stderr, "Run server as unprivileged user!\n");
         exit(EXIT_FAILURE);
     }
-
-
 
 
     /* Przeksztalcenie gniazda w gniazdo nasluchujace: */
