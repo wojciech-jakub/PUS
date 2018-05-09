@@ -11,6 +11,7 @@
 
 
 int main(int argc, char** argv) {
+  
 
     /* Deskryptory dla gniazda nasluchujacego i polaczonego: */
     int             listenfd, connfd;
