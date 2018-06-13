@@ -6,12 +6,7 @@
  *                      OPTIONS:
  *                        -p <port number>
  *                        Port to connect to on the remote host; default: 22
- *
- *
- *
- *
- * Zmodyfikowane na potrzebe cwiczenia przez: Kantor Mateusz
- */
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -109,10 +104,7 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
-    /*
-     * Zdefiniowanie sciezki do katalogu domowego uzytkownika.
-     * !!! Moze wymagac modyfikacji !!!
-     */
+
     strcpy(dir, "/home/");
     strcat(dir, cd->username);
 
@@ -130,7 +122,6 @@ int main(int argc, char **argv) {
 
 
         if (strlen(mem) > 0) {
-            /* Jezeli jest dostepna szczegolowa wersja listingu. */
             fprintf(stdout, "%s\n", mem);
         } else {
             fprintf(stdout, "%s\n", filename);

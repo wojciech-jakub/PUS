@@ -7,12 +7,7 @@
  *                      OPTIONS:
  *                        -p <port number>
  *                        Port to connect to on the remote host; default: 22
- *
- *
- *
- *
- * Zmodyfikowane na potrzebe cwiczenia przez: Kantor Mateusz
- */
+*/
 
 
 #include <stdio.h>
